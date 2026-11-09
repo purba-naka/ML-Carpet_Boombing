@@ -6,7 +6,7 @@ from carpet import config
 from carpet.config import Status, Subclass
 from carpet.windows import KEY, window_keys
 
-FLOW_COLUMNS = ["Src IP", "Dst IP", "Dst Port", "Protocol", "ts", "Total Fwd Packet"]
+FLOW_COLUMNS = ["Src IP", "Dst IP", "Dst Port", "Protocol", "ts", "Flow Duration", "Total Fwd Packet"]
 WINDOW_COLUMNS = ["subnet", "w", "window_start", "run_id", "group", "subclass", "label", "status",
                   "near_attack", "n_flows", "n_pkts", "attacker_flows"]
 NO_RUN = "-"

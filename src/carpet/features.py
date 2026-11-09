@@ -5,7 +5,7 @@ import pandas as pd
 from carpet import config
 from carpet.windows import KEY, window_keys
 
-FLOW_COLUMNS = ["Src IP", "Dst IP", "Protocol", "ts", "Total Fwd Packet", "Total Length of Fwd Packet"]
+FLOW_COLUMNS = ["Src IP", "Dst IP", "Protocol", "ts", "Flow Duration", "Total Fwd Packet", "Total Length of Fwd Packet"]
 PAIR_KEY = [*KEY, "src", "dst"]
 
 AGG_FEATURES = list(config.AGG_FEATURES)

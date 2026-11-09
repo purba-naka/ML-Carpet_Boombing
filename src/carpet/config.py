@@ -1,14 +1,24 @@
 """Single source of truth: paths, constants, enums. Nothing else in the repo retypes these values."""
 import json
+import os
 from enum import StrEnum
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+
+# D21: `start` is the proposal (PDF 3.2.3.1, a flow belongs to the window it starts in). `spread` is the
+# experiment that cuts a long flow over every window it touches. It is a switch of the whole pipeline,
+# so the experiment gets its own folders and can never overwrite the main results.
+WINDOW_ASSIGNMENT = os.environ.get("CARPET_WINDOW_ASSIGNMENT", "start")
+if WINDOW_ASSIGNMENT not in ("start", "spread"):
+    raise ValueError(f"CARPET_WINDOW_ASSIGNMENT must be start or spread, got {WINDOW_ASSIGNMENT!r}")
+_variant = "" if WINDOW_ASSIGNMENT == "start" else "_spread"
 RAW_FLOW_CSVS = {s: ROOT / f"dataset/csv/sesi{s}_all.csv/sesi{s}_all.csv" for s in (1, 2, 3)}
 ATTACK_LOG = ROOT / "dataset/Attack_log-20261109T113913Z-1-001/Attack_log/attack_log.csv"
 INTERIM = ROOT / "data/interim"
-PROCESSED = ROOT / "data/processed"
+PROCESSED = ROOT / f"data/processed{_variant}"
 REPORTS = ROOT / "reports"
+EXPERIMENTS = REPORTS / f"experiments{_variant}"
 MODELS = ROOT / "models"
 
 FLOWS = INTERIM / "flows.parquet"
@@ -18,7 +28,7 @@ SPLIT = PROCESSED / "split.parquet"
 FEATURES_AGG = PROCESSED / "features_agg.parquet"
 FEATURES_FLOW = PROCESSED / "features_flow.parquet"
 FEATURES_ARTIFACT = PROCESSED / "features_artifact.parquet"
-TABLES = REPORTS / "tables"
+TABLES = REPORTS / f"tables{_variant}"
 RAW_ROWS_EXPECTED = {1: 3_833_012, 2: 2_444_150, 3: 3_490_688}
 
 # Zero in every raw row (verified by run_clean). Kept in the flow table, never offered as features.

@@ -3,24 +3,25 @@ import time
 
 import pandas as pd
 
-from carpet import config, features, io
+from carpet import config, features, io, windows
 
-AGG_KEYS = ["WINDOW_SECONDS", "UDP", "AGG_FEATURES"]
-FLOW_KEYS = ["WINDOW_SECONDS", "FLOW_SUMMARY_COLUMNS", "FLOW_STATS"]
+AGG_KEYS = ["WINDOW_SECONDS", "WINDOW_ASSIGNMENT", "UDP", "AGG_FEATURES"]
+FLOW_KEYS = ["WINDOW_SECONDS", "WINDOW_ASSIGNMENT", "FLOW_SUMMARY_COLUMNS", "FLOW_STATS"]
 
 
 def agg_table(start: float) -> pd.DataFrame:
     parts = []
     for flows in io.iter_artifact(config.FLOWS_CLEAN, features.FLOW_COLUMNS):
-        parts.append(features.pair_counts(flows))
+        parts.append(features.pair_counts(windows.assign(flows)))
         print(f"agg {len(parts)} row groups ({time.time() - start:.0f}s)", flush=True)
     return features.build_features(features.combine_pairs(parts))
 
 
 def flow_table(start: float, columns: list[str]) -> pd.DataFrame:
     """Mean, std, max per window of flow-level columns, a few columns at a time to keep RAM small."""
-    flows = pd.concat(io.iter_artifact(config.FLOWS_CLEAN, ["Dst IP", "ts", *columns]), ignore_index=True)
-    out = features.flow_summary(flows, columns)
+    flows = pd.concat(io.iter_artifact(config.FLOWS_CLEAN, ["Dst IP", "ts", "Flow Duration", *dict.fromkeys(columns)]),
+                      ignore_index=True)
+    out = features.flow_summary(windows.assign(flows, split=()), columns)
     print(f"flow summary of {len(columns)} columns {out.shape} ({time.time() - start:.0f}s)", flush=True)
     return out
 
@@ -50,7 +51,7 @@ def main() -> None:
                       inputs=(config.FLOWS_CLEAN,),
                       notes={"nan_cells": {c: int(n) for c, n in flow.isna().sum().items() if n}})
     io.write_artifact(artifact, config.FEATURES_ARTIFACT, script="scripts/run_features.py",
-                      config_keys=["WINDOW_SECONDS", "ARTIFACT_FLOW_COLUMNS", "FLOW_STATS"],
+                      config_keys=["WINDOW_SECONDS", "WINDOW_ASSIGNMENT", "ARTIFACT_FLOW_COLUMNS", "FLOW_STATS"],
                       inputs=(config.FLOWS_CLEAN,),
                       notes={"nan_cells": {c: int(n) for c, n in artifact.isna().sum().items() if n}})
     print(f"wrote {config.FEATURES_AGG.name} {agg.shape}, {config.FEATURES_FLOW.name} {flow.shape}, "

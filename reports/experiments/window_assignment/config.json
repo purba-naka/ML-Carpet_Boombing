@@ -1,0 +1,13 @@
+{
+  "SEED": 42,
+  "CV_FOLDS": 5,
+  "HOLDOUT_RUNS": [
+    "C10",
+    "C11",
+    "C9",
+    "C12",
+    "F2",
+    "F6"
+  ],
+  "WINDOW_ASSIGNMENT": "start"
+}

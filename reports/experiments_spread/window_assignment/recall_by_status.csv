@@ -1,0 +1,9 @@
+status,n,flagged,recall,assignment,model,weak_in_train
+ok,132,132,1.0,spread,rf,True
+ok_weak,1,0,0.0,spread,rf,True
+ok,132,132,1.0,spread,xgb,True
+ok_weak,1,0,0.0,spread,xgb,True
+ok,132,132,1.0,spread,rf,False
+ok_weak,1,0,0.0,spread,rf,False
+ok,132,132,1.0,spread,xgb,False
+ok_weak,1,0,0.0,spread,xgb,False
