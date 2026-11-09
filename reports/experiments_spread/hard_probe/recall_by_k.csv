@@ -1,0 +1,21 @@
+model,k_destinations,n_carpet_windows,recall,false_alarm_rate_on_negatives
+rf,original,133,0.9924812030075187,0.0
+rf,4,133,0.631578947368421,0.0
+rf,6,133,0.9097744360902256,0.0
+rf,8,133,0.9924812030075187,0.0
+rf,12,133,0.9924812030075187,0.0
+xgb,original,133,0.9924812030075187,0.0
+xgb,4,133,0.16541353383458646,0.0
+xgb,6,133,0.14285714285714285,0.0
+xgb,8,133,0.13533834586466165,0.0
+xgb,12,133,0.6390977443609023,0.0
+threshold n_unique_dst,original,133,0.9924812030075187,0.0
+threshold n_unique_dst,4,133,0.0,0.0
+threshold n_unique_dst,6,133,0.0,0.0
+threshold n_unique_dst,8,133,0.0,0.0
+threshold n_unique_dst,12,133,0.0,0.0
+threshold dst_entropy_norm,original,133,0.9849624060150376,0.0
+threshold dst_entropy_norm,4,133,0.8120300751879699,0.0
+threshold dst_entropy_norm,6,133,0.8571428571428571,0.0
+threshold dst_entropy_norm,8,133,0.9097744360902256,0.0
+threshold dst_entropy_norm,12,133,0.924812030075188,0.0

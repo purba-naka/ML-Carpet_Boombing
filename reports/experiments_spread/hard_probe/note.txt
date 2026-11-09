@@ -1,0 +1,1 @@
+Probe: carpet windows thinned to k destinations, out of fold, trainval only, spread assignment. Not a substitute for real hard runs. Hold-out not read.
