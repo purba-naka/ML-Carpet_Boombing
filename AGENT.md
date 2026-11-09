@@ -24,7 +24,7 @@ Undergraduate thesis (skripsi): detect **DDoS carpet bombing** with machine lear
 7. **Never delete or overwrite raw data** (`dataset/`, `flows_csv-*/`, `pcap_dataset-*/`, the PDF). They are read only.
 8. **Never claim success without running the check.** "Should work" is not a result. Run it, paste the real output.
 9. **Never silently drop rows.** Every filter logs how many rows it removed and why.
-10. **Never commit, push, or run git write commands** unless the human asks. There is no git repo yet.
+10. **Never commit, push, or run git write commands** unless the human asks. The repo is live (origin = github.com/purba-naka/ML-Carpet_Boombing), so a push is public. Data, models and the proposal PDF never go in.
 
 ## 2b. Decisions change, and that is normal
 
@@ -163,7 +163,7 @@ Eliminate bug classes, not bugs. When you fix a bug, ask "what design would make
 
 ## 11. Review and verification protocols
 
-Use these when the human asks for a review. "Change set" = the files you changed in this task (no git yet, so list them explicitly).
+Use these when the human asks for a review. "Change set" = the files you changed in this task (list them explicitly, or use `git status`).
 
 **Simplify review.** Go over the change set and simplify: KISS, DRY, SRP, less bloat, remove unnecessary state (variables, fields, arguments), protect from state explosion. Steelman each change: write the best argument for keeping the old version, and only change if the simplification still wins. Never remove critical functionality.
 
@@ -179,7 +179,7 @@ Use these when the human asks for a review. "Change set" = the files you changed
 3. *ML validity and leakage auditor* (the most fitting third style for this repo): "Hunt for leakage, label contamination, split mistakes, fit-on-test, metric misuse, irreproducibility, claims not backed by numbers."
 Each subagent gets the change set, the relevant plan section, and must report concrete file:line findings with a repro, not opinions. Merge, dedupe, fix, re-run the checks.
 
-**Commit style (dormant until the human enables git).** Same style as history. 2 to 5 sentences. Down to earth, concise, tell the story, include the non obvious reason. No em-dashes. Must not read like AI wrote it. Only commit when asked.
+**Commit style (git is on, commit only when the human asks).** Same style as history. 2 to 5 sentences. Down to earth, concise, tell the story, include the non obvious reason. No em-dashes. Must not read like AI wrote it. Only commit when asked.
 
 ## 12. When to stop and ask the human
 

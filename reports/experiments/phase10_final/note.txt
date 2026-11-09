@@ -1,1 +1,2 @@
 Phase 10: XGBoost primary, RF comparison, agg_flow, weak in train, phase 8 params, seed 42, threshold 0.5. Declared before the run. One shot on the real hold-out, no iteration after.
+Note added 2026-11-09 after the run: this folder comes from the one shot run, which labeled XGBoost "primary" (role column in metrics.csv, figures final_*_xgb.png). The proposal (PDF 3.2.4.1) makes Random Forest the main model, so read RF as main and XGBoost as comparison. The numbers are unchanged. The final run was not repeated, run_final.py now labels the roles the PDF way for any future run.

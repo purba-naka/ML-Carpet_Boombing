@@ -3,9 +3,10 @@
 Final mode is the real hold-out and may only be run once. Rehearsal mode (--rehearse) runs the exact
 same code path on trainval fold 0 as a fake hold-out, so a mechanical bug burns a fold, not the hold-out.
 
-Declared before any hold-out number was seen: XGBoost is the primary model (all CV metrics slightly
-better, consistently), RF is the comparison. Both train on all of trainval, agg_flow features, weak
-windows in train, phase 8 picked params, seed 42, threshold 0.5.
+Roles follow the proposal (PDF 3.2.4.1): Random Forest is the main model, XGBoost the comparison.
+The first version of this script declared XGBoost primary, which contradicted the PDF (IMPLEMENTATION.md
+change log, D20). Both train on all of trainval, agg_flow features, weak windows in train, phase 8
+picked params, seed 42, threshold 0.5.
 """
 import json
 import sys
@@ -70,7 +71,7 @@ def run_model(name: str, role: str, params: dict, train: pd.DataFrame, test: pd.
     missed.to_csv(out / f"missed_{name}.csv", index=False)
     false_alarms.to_csv(out / f"false_alarms_{name}.csv", index=False)
 
-    if role == "primary":
+    if role == "main":
         fig, ax = plt.subplots(figsize=(4, 4))
         ConfusionMatrixDisplay.from_predictions(test.label, pred, ax=ax)
         ax.set_title(f"{where}: confusion matrix ({name})")
@@ -135,7 +136,7 @@ def main() -> None:
     where = f"REHEARSAL trainval fold {test.fold.min()}" if rehearse else "hold-out"
     params = json.loads(CHOSEN.read_text())
     rows = []
-    for name, role in (("xgb", "primary"), ("rf", "comparison")):
+    for name, role in (("rf", "main"), ("xgb", "comparison")):
         rows.append(run_model(name, role, params[f"{name}_agg_flow_weak1"]["params"],
                               train, test, cols, out, figures, save=not rehearse, where=where))
         r = rows[-1]
@@ -148,8 +149,8 @@ def main() -> None:
         summary.to_csv(config.TABLES / "final_metrics.csv", index=False)
     (out / "config.json").write_text(json.dumps({k: config.snapshot()[k] for k in
                                                  ("SEED", "HOLDOUT_RUNS", "FEATURE_SETS")}, indent=2))
-    (out / "note.txt").write_text("Phase 10: XGBoost primary, RF comparison, agg_flow, weak in train, "
-                                  "phase 8 params, seed 42, threshold 0.5. Declared before the run. " +
+    (out / "note.txt").write_text("Phase 10: RF main, XGBoost comparison (PDF 3.2.4.1), agg_flow, weak in train, "
+                                  "phase 8 params, seed 42, threshold 0.5. " +
                                   ("REHEARSAL on a trainval fold, hold-out untouched.\n" if rehearse else
                                    "One shot on the real hold-out, no iteration after.\n"))
     print(f"done in {time.time() - start:.0f}s -> {out}")
