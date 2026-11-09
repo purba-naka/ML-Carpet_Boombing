@@ -38,6 +38,10 @@ When a new important choice appears, add a row here: `ID | phase | question | re
 
 | ID | Phase | Question | Recommendation |
 |---|---|---|---|
+| O13 | new data | Build a synthetic carpet dataset from CIC-DDoS2019 as the proposal says (PDF 3.2.2.4, 3.2.4.2): rewrite the destination IP of single target attack flows so they spread over N hosts of one /24, N chosen by us (4, 8, 12, 16, 64, 128), label from how the window was built. Not started. First step: check whether the CIC-DDoS2019 CSV flow files are on this laptop. | Yes. It fills the 5 to 12 destination gap the testbed lacks. Build single target negatives from the SAME attack vector, vary the spread (even and skewed), group by source segment when splitting, and write down that it is synthetic on synthetic. Ask whether to train on CIC plus PNETLab mixed (PDF) or train on CIC and test on PNETLab (stronger). Notes in memory `reminder_cic_synthetic.md` |
+| O14 | eval | PDF 3.2.5 asks for accuracy, not reported yet. | Add it to `evaluate.score`, with a note that it misleads on imbalanced data |
+| O15 | ablation | PDF 3.2.2.4 asks for an ablation without `n_unique_dst` and volume. We did `n_unique_src`, `udp_ratio`, volume, not `n_unique_dst` alone. | Add the set `agg_flow_no_dst` |
+| O16 | robustness | MAWI as external test only, never in training (PDF 3.2.1.2). Needs CICFlowMeter and pcaps, not started. | After O13. Report as a false alarm test, not as carpet detection |
 
 
 
