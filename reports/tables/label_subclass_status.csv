@@ -1,0 +1,5 @@
+subclass,exclude_boundary,exclude_unlogged,ok,ok_weak
+benign,60,0,533,0
+carpet,0,0,153,33
+focused,0,0,81,31
+unlogged,0,30,0,0

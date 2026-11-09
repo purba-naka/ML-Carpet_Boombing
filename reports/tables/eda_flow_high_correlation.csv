@@ -1,0 +1,66 @@
+a,b,spearman
+Fwd Packet Length Mean,Fwd Segment Size Avg,1.0
+Bwd Packet Length Mean,Bwd Segment Size Avg,1.0
+FIN Flag Count,PSH Flag Count,0.9999999558942514
+SYN Flag Count,FWD Init Win Bytes,0.999999404572771
+Flow Duration,Fwd IAT Total,0.9999848289477085
+Flow IAT Max,Fwd IAT Max,0.9999681143290501
+ACK Flag Count,Bwd Init Win Bytes,0.999745620280318
+Bwd Bytes/Bulk Avg,Bwd Packet/Bulk Avg,0.9995782881423199
+Fwd Packet Length Min,Packet Length Min,0.9994997854522268
+Idle Mean,Idle Max,0.999147943858178
+Idle Mean,Idle Min,0.9989582136220325
+Flow Packets/s,Bwd Packets/s,0.9975414074908482
+Flow Packets/s,Fwd Packets/s,0.9974695214000482
+PSH Flag Count,ACK Flag Count,0.9972416382718908
+FIN Flag Count,ACK Flag Count,0.9972413736374725
+Active Mean,Active Max,0.9966289921079141
+Idle Max,Idle Min,0.9963293417669935
+Fwd Packet Length Mean,Packet Length Mean,0.9960820383927934
+Packet Length Mean,Fwd Segment Size Avg,0.9960820383927934
+PSH Flag Count,Bwd Init Win Bytes,0.9953875000859701
+FIN Flag Count,Bwd Init Win Bytes,0.9953871913458697
+Flow IAT Mean,Fwd IAT Mean,0.9947910809383578
+Active Mean,Active Min,0.9939639789338657
+Active Std,Idle Std,0.9938469876257177
+Bwd Packet Length Std,FIN Flag Count,0.9924685304004405
+Bwd Packet Length Std,PSH Flag Count,0.9924682216717167
+Packet Length Mean,Average Packet Size,0.9915846458950098
+Fwd Packets/s,Bwd Packets/s,0.9909294748055129
+FWD Init Win Bytes,Bwd Init Win Bytes,0.9907075887664877
+SYN Flag Count,Bwd Init Win Bytes,0.9907013880183472
+ACK Flag Count,FWD Init Win Bytes,0.9905039510342019
+SYN Flag Count,ACK Flag Count,0.9905029326234248
+Total Fwd Packet,Total Bwd packets,0.989993255701314
+Bwd Packet Length Std,ACK Flag Count,0.9887832717842546
+Fwd IAT Total,Bwd IAT Total,0.9879897306088593
+Flow Duration,Bwd IAT Total,0.9879808661277238
+FWD Init Win Bytes,Fwd Seg Size Min,0.987761606994245
+SYN Flag Count,Fwd Seg Size Min,0.9877496717266125
+Fwd Packet Length Min,Packet Length Mean,0.9871996836448454
+Fwd Packet Length Min,Fwd Packet Length Mean,0.9871691933674838
+Fwd Packet Length Min,Fwd Segment Size Avg,0.9871691933674838
+Packet Length Min,Packet Length Mean,0.9871681480483071
+Bwd Packet Length Std,Bwd Init Win Bytes,0.98675563262356
+Packet Length Min,Fwd Segment Size Avg,0.9864787753149541
+Fwd Packet Length Mean,Packet Length Min,0.9864787753149541
+SYN Flag Count,PSH Flag Count,0.9861559668090585
+PSH Flag Count,FWD Init Win Bytes,0.9861553771825335
+FIN Flag Count,SYN Flag Count,0.9861548200596338
+FIN Flag Count,FWD Init Win Bytes,0.9861542304335894
+Fwd IAT Std,Bwd IAT Std,0.9860223891214381
+Fwd Packet Length Std,PSH Flag Count,0.9851826928022223
+Fwd Packet Length Std,FIN Flag Count,0.9851818989322124
+Active Max,Active Min,0.9850964047476134
+Flow IAT Std,Fwd IAT Max,0.9849605477667197
+Flow IAT Std,Flow IAT Max,0.9849448033897776
+Average Packet Size,Fwd Segment Size Avg,0.9848567925522925
+Fwd Packet Length Mean,Average Packet Size,0.9848567925522925
+Fwd Packet Length Std,ACK Flag Count,0.9839067386274782
+Fwd Packet Length Min,Average Packet Size,0.98282749696837
+Packet Length Min,Average Packet Size,0.982823723862648
+Fwd Packet Length Std,Bwd Init Win Bytes,0.9824242119379378
+Bwd Packet Length Std,Fwd Seg Size Min,0.9814557607735933
+Bwd Packet Length Min,Bwd Packet Length Mean,0.9811717058151135
+Bwd Packet Length Min,Bwd Segment Size Avg,0.9811717058151135
+Fwd Header Length,Bwd Header Length,0.9805119866405455

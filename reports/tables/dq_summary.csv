@@ -1,0 +1,8 @@
+,value
+rows_in,9767850
+rows_dropped_outside_victim,8866
+rows_out,9758984
+rows_with_blanked_cell,4065
+exact_duplicate_rows,0
+protocols,"{17: 9735145, 6: 27413, 0: 5292}"
+rows_per_session,"{1: 3833012, 2: 2444150, 3: 3490688}"

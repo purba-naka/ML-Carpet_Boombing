@@ -1,0 +1,1 @@
+Phase 9 ablation: agg_flow with feature groups removed one at a time, plus the D19 artifact columns (Bwd, TCP flag) added back. Phase 8 picked params, both weak settings. Hold-out untouched.

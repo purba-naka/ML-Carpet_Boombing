@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+.pytest_cache/
+data/
+models/
+dataset/
+flows_csv-*/
+pcap_dataset-*/
+*.parquet
+nul
+
+# not for the public repo: proposal PDF and scratch files
+Final Report Pre Thesis*.pdf
+_tmp_*

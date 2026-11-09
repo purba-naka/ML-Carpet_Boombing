@@ -1,0 +1,11 @@
+subnet,w,run_id,group,subclass,status,near_attack,label,proba,pred
+198.51.100.0/24,1793625840,C9,C9,carpet,ok_weak,False,1,0.025543556,0
+198.51.100.0/24,1793625960,C9,C9,carpet,ok_weak,False,1,0.17230073,0
+198.51.100.0/24,1793626140,C9,C9,carpet,ok_weak,False,1,0.12729447,0
+198.51.100.0/24,1793626260,C9,C9,carpet,ok_weak,False,1,0.282377,0
+198.51.100.0/24,1793628420,C11,C11,carpet,ok_weak,False,1,0.017697936,0
+198.51.100.0/24,1793628540,C11,C11,carpet,ok_weak,False,1,0.015105247,0
+198.51.100.0/24,1793628660,C11,C11,carpet,ok_weak,False,1,0.015382131,0
+198.51.100.0/24,1793628780,C11,C11,carpet,ok_weak,False,1,0.09544701,0
+198.51.100.0/24,1793628960,C11,C11,carpet,ok_weak,False,1,0.2013695,0
+198.51.100.0/24,1793629080,C11,C11,carpet,ok_weak,False,1,0.11729555,0

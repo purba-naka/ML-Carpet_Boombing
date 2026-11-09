@@ -1,0 +1,1 @@
+Phase 10: XGBoost primary, RF comparison, agg_flow, weak in train, phase 8 params, seed 42, threshold 0.5. Declared before the run. REHEARSAL on a trainval fold, hold-out untouched.
