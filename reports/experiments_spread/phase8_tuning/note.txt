@@ -1,0 +1,1 @@
+Phase 8 (D23): 30 settings per model, PR-AUC, ties within one standard error go to the simplest, defaults kept when the search ends below them. Hold-out untouched.

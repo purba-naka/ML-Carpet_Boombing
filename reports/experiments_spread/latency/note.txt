@@ -1,0 +1,1 @@
+Worst detection delay = window 60 s + flow timeout 120 s (an attack flow is only exported when it ends or times out) + compute 0.69 s = 180.7 s. CICFlowMeter extraction time not measured.

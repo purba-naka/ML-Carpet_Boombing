@@ -1,0 +1,5 @@
+rf_agg_weak1           search  picked 0.994±0.014  best 0.994  default 0.994±0.014  range over settings 0.000  (92s)
+rf_agg_flow_weak1      search  picked 0.997±0.006  best 0.997  default 0.997±0.007  range over settings 0.003  (171s)
+xgb_agg_weak1          search  picked 0.994±0.014  best 0.994  default 0.994±0.014  range over settings 0.000  (188s)
+xgb_agg_flow_weak1     search  picked 0.994±0.014  best 0.994  default 0.994±0.014  range over settings 0.000  (207s)
+done in 207s -> C:\kodingan\skripsyit_part2\reports\experiments_spread\phase8_tuning

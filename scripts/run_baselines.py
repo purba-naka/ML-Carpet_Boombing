@@ -7,7 +7,7 @@ import pandas as pd
 from carpet import config, evaluate, models, table
 
 EXPERIMENT = "phase7_baselines"
-OUT = config.REPORTS / "experiments" / EXPERIMENT
+OUT = config.EXPERIMENTS / EXPERIMENT
 THRESHOLD_FEATURES = ["dst_entropy_norm", "n_unique_dst"]
 
 
@@ -27,7 +27,7 @@ def main() -> None:
     df = table.trainval(table.load_table())
     OUT.mkdir(parents=True, exist_ok=True)
     rows, oofs = [], {}
-    for weak in (True, False):
+    for weak in config.WEAK_IN_TRAIN_SETTINGS:
         for name, (factory, cols) in experiments(df).items():
             folds, oof = evaluate.run_cv(df, factory, cols, weak_in_train=weak)
             tag = f"{name}|weak_in_train={weak}"

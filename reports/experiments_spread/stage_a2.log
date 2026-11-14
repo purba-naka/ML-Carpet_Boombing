@@ -1,0 +1,68 @@
+=== run_robustness.py
+importance fold 0 done
+importance fold 1 done
+importance fold 2 done
+importance fold 3 done
+importance fold 4 done
+top features (native importance, mean over folds):
+ model                    feature  native_mean  native_std  permutation_mean  permutation_std
+   rf               n_unique_dst        0.152       0.011             0.001            0.002
+   rf        concentration_ratio        0.150       0.016             0.001            0.002
+   rf                dst_entropy        0.125       0.003             0.001            0.002
+   rf            n_src_dst_pairs        0.104       0.024             0.001            0.002
+   rf           dst_entropy_norm        0.082       0.011             0.001            0.002
+   rf                    n_flows        0.065       0.003             0.001            0.003
+   rf Fwd Packet Length Std__std        0.055       0.005             0.002            0.004
+   rf        Flow Packets/s__std        0.046       0.002             0.000            0.000
+  xgb               n_unique_dst        0.608       0.060             0.363            0.084
+  xgb           dst_entropy_norm        0.139       0.052            -0.001            0.002
+  xgb        concentration_ratio        0.081       0.048            -0.001            0.002
+  xgb                dst_entropy        0.080       0.115            -0.001            0.002
+  xgb       Flow Packets/s__mean        0.023       0.015             0.000            0.000
+  xgb          Flow Bytes/s__std        0.016       0.015             0.000            0.000
+  xgb         Flow Bytes/s__mean        0.015       0.012             0.000            0.000
+  xgb           max_pkts_per_dst        0.012       0.022             0.000            0.000
+groups (PR-AUC drop when shuffled together):
+ model      group  pr_auc_drop_mean  pr_auc_drop_std_over_folds
+   rf dst_spread             0.042                       0.043
+   rf       flow             0.003                       0.006
+   rf  dst_count             0.002                       0.004
+   rf     volume             0.002                       0.004
+   rf   protocol             0.000                       0.001
+   rf     source             0.000                       0.000
+  xgb  dst_count             0.355                       0.088
+  xgb       flow             0.000                       0.000
+  xgb   protocol             0.000                       0.000
+  xgb     source             0.000                       0.000
+  xgb     volume             0.000                       0.000
+  xgb dst_spread            -0.001                       0.002 
+(115s)
+
+seed spread (min..max over 5 seeds):
+                      recall_min  recall_max  pr_auc_min  pr_auc_max
+model weak_in_train                                                
+rf    True                0.992       0.992       0.994       0.997
+xgb   True                0.992       0.992       0.994       0.994 
+(121s)
+
+bootstrap rf weak1 (125s)
+bootstrap xgb weak1 (129s)
+done in 129s -> C:\kodingan\skripsyit_part2\reports\experiments_spread\phase9_robustness
+=== run_final.py --rehearse
+train 520 windows (31 groups, 108 carpet), test 128 windows (6 groups, 25 carpet), REHEARSAL on trainval fold 0
+rf (main): recall=1.000 precision=0.962 fpr=0.010 pr_auc=1.000 roc_auc=1.000 missed=0 false_alarms=1 (4s)
+xgb (comparison): recall=1.000 precision=1.000 fpr=0.000 pr_auc=1.000 roc_auc=1.000 missed=0 false_alarms=0 (7s)
+threshold_dst_entropy_norm (baseline): recall=0.960 precision=1.000 fpr=0.000 pr_auc=1.000 roc_auc=1.000 missed=1 false_alarms=0 (10s)
+threshold_n_unique_dst (baseline): recall=1.000 precision=1.000 fpr=0.000 pr_auc=1.000 roc_auc=1.000 missed=0 false_alarms=0 (13s)
+all_negative (baseline): recall=0.000 precision=0.000 fpr=0.000 pr_auc=0.195 roc_auc=0.500 missed=25 false_alarms=0 (16s)
+done in 16s -> C:\kodingan\skripsyit_part2\reports\experiments_spread\phase10_rehearsal
+=== run_latency.py
+30 windows, 9,755,766 candidate flows loaded (1s)
+                  features_ms  predict_rf_ms  predict_xgb_ms
+subclass                                                    
+benign                  88.26          17.62            0.86
+carpet                 300.73          17.78            0.87
+focused                 87.70          17.59            0.86
+max over windows       673.89          18.87            1.06
+Worst detection delay = window 60 s + flow timeout 120 s (an attack flow is only exported when it ends or times out) + compute 0.69 s = 180.7 s. CICFlowMeter extraction time not measured.
+done in 31s -> C:\kodingan\skripsyit_part2\reports\experiments_spread\latency
