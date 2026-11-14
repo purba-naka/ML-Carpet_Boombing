@@ -9,7 +9,8 @@ from sklearn.metrics import average_precision_score, confusion_matrix, roc_auc_s
 from carpet import config
 from carpet.config import Status
 
-METRICS = ["recall", "precision", "f1", "fpr", "pr_auc", "roc_auc"]
+# Accuracy is last on purpose: the PDF lists it, but on 20 percent positives it flatters any model.
+METRICS = ["recall", "precision", "f1", "fpr", "pr_auc", "roc_auc", "accuracy"]
 POS = 1
 
 # A model factory gets the training labels and returns an unfitted estimator.
@@ -31,6 +32,7 @@ def score(y: np.ndarray, proba: np.ndarray, pred: np.ndarray) -> dict:
         "fpr": fp / (fp + tn) if fp + tn else np.nan,
         "pr_auc": average_precision_score(y, proba) if both else np.nan,
         "roc_auc": roc_auc_score(y, proba) if both else np.nan,
+        "accuracy": (tp + tn) / len(y) if len(y) else np.nan,
         "tp": int(tp), "fp": int(fp), "tn": int(tn), "fn": int(fn),
     }
 
@@ -96,3 +98,40 @@ def false_alarm_by_proximity(oof: pd.DataFrame) -> pd.DataFrame:
     g = b.groupby("near_attack").agg(n=("pred", "size"), false_alarms=("pred", "sum"))
     g["fpr"] = g.false_alarms / g.n
     return g
+
+
+def group_permutation(model, X: np.ndarray, y: np.ndarray, groups: dict[str, list[int]], *,
+                      n_repeats: int, seed: int) -> pd.DataFrame:
+    """PR-AUC drop when all columns of a group are shuffled together, one row per group.
+
+    Shuffling correlated columns one at a time hides them: the twin column still carries the
+    signal. Moving the whole group with one row permutation removes it for real.
+    """
+    rng = np.random.default_rng(seed)
+    base = average_precision_score(y, model.predict_proba(X)[:, POS])
+    rows = []
+    for name, idx in groups.items():
+        drops = []
+        for _ in range(n_repeats):
+            Xp = X.copy()
+            Xp[:, idx] = X[rng.permutation(len(X))][:, idx]
+            drops.append(base - average_precision_score(y, model.predict_proba(Xp)[:, POS]))
+        rows.append({"group": name, "pr_auc_drop_mean": float(np.mean(drops)), "pr_auc_drop_std": float(np.std(drops))})
+    return pd.DataFrame(rows)
+
+
+def bootstrap_runs(res: pd.DataFrame, n_boot: int, rng: np.random.Generator) -> dict:
+    """Quantiles of every metric when runs (groups) are resampled with replacement, never single windows.
+
+    A run is the unit the model has never seen, so the uncertainty it carries is what the numbers
+    should show. `res` needs group, label, proba and pred.
+    """
+    groups = res.group.unique()
+    by_group = {g: part for g, part in res.groupby("group")}
+    draws = []
+    for _ in range(n_boot):
+        parts = pd.concat([by_group[g] for g in rng.choice(groups, size=len(groups), replace=True)])
+        draws.append(score(parts.label.to_numpy(), parts.proba.to_numpy(), parts.pred.to_numpy()))
+    b = pd.DataFrame(draws)
+    return {"n_runs": len(groups)} | {f"{c}_{q}": b[c].quantile(q_)
+            for c in METRICS for q, q_ in (("q025", 0.025), ("q50", 0.5), ("q975", 0.975))}

@@ -23,10 +23,10 @@ from sklearn.metrics import ConfusionMatrixDisplay, PrecisionRecallDisplay, RocC
 
 from carpet import config, evaluate, models, split, table
 
-FINAL = config.REPORTS / "experiments" / "phase10_final"
-REHEARSAL = config.REPORTS / "experiments" / "phase10_rehearsal"
-CHOSEN = config.REPORTS / "experiments" / "phase8_tuning" / "chosen_params.json"
-FIG = config.REPORTS / "figures"
+FINAL = config.EXPERIMENTS / "phase10_final"
+REHEARSAL = config.EXPERIMENTS / "phase10_rehearsal"
+CHOSEN = config.EXPERIMENTS / "phase8_tuning" / "chosen_params.json"
+FIG = config.FIGURES
 
 
 def one_shot_split(df: pd.DataFrame, rehearse: bool) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -37,12 +37,23 @@ def one_shot_split(df: pd.DataFrame, rehearse: bool) -> tuple[pd.DataFrame, pd.D
     return table.trainval(df), df[df.partition == split.HOLDOUT]
 
 
+N_BOOT = 1000
+# PL-6: the one-threshold rules tie the models on CV, so they are judged on the same test rows,
+# fitted on the same train rows. Without them the final table cannot say whether the model was needed.
+BASELINES = {"threshold_dst_entropy_norm": "dst_entropy_norm", "threshold_n_unique_dst": "n_unique_dst",
+             "all_negative": None}
+
+
 def fit(model: str, params: dict, train: pd.DataFrame, cols: list[str]):
     y = train.label.to_numpy()
     if model == "xgb":
         m = models.xgboost(evaluate.scale_pos_weight(pd.Series(y)), **params)
-    else:
+    elif model == "rf":
         m = models.random_forest(**params)
+    elif BASELINES[model] is None:
+        m = models.AllNegative()
+    else:
+        m = models.SingleFeatureThreshold(feature_index=cols.index(BASELINES[model]))
     m.fit(train[cols].to_numpy(), y)
     return m
 
@@ -84,19 +95,21 @@ def run_model(name: str, role: str, params: dict, train: pd.DataFrame, test: pd.
         PrecisionRecallDisplay.from_predictions(test.label, proba, ax=ax)
         ax.set_title(f"{where}: PR ({name})")
         fig.tight_layout(); fig.savefig(figures / f"final_pr_{name}.png", dpi=110); plt.close(fig)
-    if "xgbclassifier" in m.named_steps:
+    if "xgbclassifier" in getattr(m, "named_steps", {}):
         gain = m.named_steps["xgbclassifier"].get_booster().get_score(importance_type="gain")
         gain = pd.Series({cols[int(k[1:])]: v for k, v in gain.items()}).sort_values(ascending=True).tail(15)
         fig, ax = plt.subplots(figsize=(6, 5))
         ax.barh(gain.index, gain.values)
         ax.set_title(f"XGBoost gain importance ({where})")
         fig.tight_layout(); fig.savefig(figures / "final_importance_xgb.png", dpi=110); plt.close(fig)
-    if save:
+    boot = evaluate.bootstrap_runs(res, N_BOOT, np.random.default_rng(config.SEED))
+    boot = {k: v for k, v in boot.items() if k.split("_q")[0] in ("recall", "precision", "fpr", "pr_auc", "n_runs")}
+    if save and role != "baseline":
         joblib.dump({"model": m, "features": cols, "params": params, "role": role,
                      "trained_on": "trainval"}, config.MODELS / f"final_{name}.joblib")
     return {"model": name, "role": role, "n_train": len(train), "n_train_pos": int(train.label.sum()),
             "n_test": len(test), "n_test_pos": int(test.label.sum()), "missed": len(missed),
-            "false_alarms": len(false_alarms), **metrics}
+            "false_alarms": len(false_alarms), **metrics, **boot}
 
 
 def main() -> None:
@@ -136,8 +149,10 @@ def main() -> None:
     where = f"REHEARSAL trainval fold {test.fold.min()}" if rehearse else "hold-out"
     params = json.loads(CHOSEN.read_text())
     rows = []
-    for name, role in (("rf", "main"), ("xgb", "comparison")):
-        rows.append(run_model(name, role, params[f"{name}_agg_flow_weak1"]["params"],
+    plan = [("rf", "main"), ("xgb", "comparison")] + [(b, "baseline") for b in BASELINES]
+    for name, role in plan:
+        model_params = params[f"{name}_agg_flow_weak1"]["params"] if role != "baseline" else {}
+        rows.append(run_model(name, role, model_params,
                               train, test, cols, out, figures, save=not rehearse, where=where))
         r = rows[-1]
         print(f"{name} ({role}): recall={r['recall']:.3f} precision={r['precision']:.3f} "

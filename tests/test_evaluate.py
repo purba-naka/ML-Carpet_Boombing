@@ -63,5 +63,21 @@ def test_score_marks_undefined_metrics_as_nan_not_zero():
     assert np.isnan(s["recall"]) and np.isnan(s["roc_auc"]) and s["fpr"] == 0
 
 
+def test_accuracy_matches_the_confusion_matrix():
+    # The phase 10 RF hold-out: tn 129, fp 1, fn 10, tp 43.
+    y = np.r_[np.zeros(130), np.ones(53)].astype(int)
+    pred = np.r_[np.zeros(129), np.ones(1), np.zeros(10), np.ones(43)].astype(int)
+    s = evaluate.score(y, pred.astype(float), pred)
+    assert s["accuracy"] == pytest.approx(172 / 183)
+
+
 def test_scale_pos_weight_is_negatives_over_positives():
     assert evaluate.scale_pos_weight(pd.Series([0, 0, 0, 1])) == 3.0
+
+
+def test_group_permutation_finds_the_signal_group_and_ignores_noise():
+    df = _table(per_fold=60)
+    X, y = df[["signal", "noise"]].to_numpy(), df.label.to_numpy()
+    m = models.random_forest(n_estimators=30).fit(X, y)
+    out = evaluate.group_permutation(m, X, y, {"signal": [0], "noise": [1]}, n_repeats=3, seed=0).set_index("group")
+    assert out.loc["signal", "pr_auc_drop_mean"] > 0.3 > abs(out.loc["noise", "pr_auc_drop_mean"])

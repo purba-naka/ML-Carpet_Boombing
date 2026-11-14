@@ -10,7 +10,7 @@ import pandas as pd
 
 from carpet import clean, config, eda, features, io
 
-FIG = config.REPORTS / "figures"
+FIG = config.FIGURES
 SUBCLASS_COLORS = {"benign": "tab:gray", "carpet": "tab:red", "focused": "tab:blue"}
 FLOW_BATCH = 8
 

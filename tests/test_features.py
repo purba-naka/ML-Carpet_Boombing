@@ -62,3 +62,12 @@ def test_feature_sets_contain_no_forbidden_column_and_flow_set_extends_agg():
         assert len(cols) == len(set(cols)), f"duplicate columns in {name}"
     assert set(config.FEATURE_SETS["agg"]) < set(config.FEATURE_SETS["agg_flow"])
     assert len(config.FLOW_FEATURES) == 3 * len(config.FLOW_SUMMARY_COLUMNS)
+
+
+def test_feature_groups_cover_agg_flow_once_and_ablations_remove_whole_groups():
+    from carpet import config
+    grouped = [f for g in config.FEATURE_GROUPS.values() for f in g]
+    assert len(grouped) == len(set(grouped)) and set(grouped) == set(config.FEATURE_SETS["agg_flow"])
+    no_count = set(config.FEATURE_SETS["agg_flow_no_dst_count_no_volume"])
+    assert not no_count & set(config.FEATURE_GROUPS["dst_count"] + config.FEATURE_GROUPS["volume"])
+    assert set(config.FEATURE_SETS["flow"]) == set(config.FEATURE_GROUPS["flow"])

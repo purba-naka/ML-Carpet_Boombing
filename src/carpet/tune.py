@@ -1,6 +1,7 @@
 """Small randomized search on the CV folds. Picks the simplest setting when scores tie."""
 import json
 
+import numpy as np
 import pandas as pd
 from sklearn.model_selection import ParameterSampler
 
@@ -34,12 +35,14 @@ def search(df: pd.DataFrame, model: str, features: list[str], *, weak_in_train: 
 
 
 def pick(results: pd.DataFrame) -> pd.Series:
-    """Best mean score, unless another setting is inside one fold std of it: then the simplest of those wins.
+    """Best mean score, unless another setting is within one standard error of it: then the simplest wins.
 
-    Fold std is the honest noise level here (5 folds of 2 to 4 runs). A gain below it is not a gain.
+    D23: v1 used a whole fold std as the tie band. With fold std near 0.05 that band swallowed every
+    setting, and all 8 configurations got the same small model. The standard error of the mean is the
+    noise of the number we actually compare.
     """
     best = results[f"{SCORE}_mean"].idxmax()
-    noise = results.loc[best, f"{SCORE}_std"]
+    noise = results.loc[best, f"{SCORE}_std"] / np.sqrt(results.loc[best, f"{SCORE}_n_folds"])
     close = results[results[f"{SCORE}_mean"] >= results.loc[best, f"{SCORE}_mean"] - noise]
     return results.loc[close.complexity.idxmin()]
 

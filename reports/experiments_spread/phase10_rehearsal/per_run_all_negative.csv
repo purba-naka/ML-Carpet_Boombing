@@ -1,0 +1,7 @@
+group,subclass,n,flagged,mean_proba,flagged_share
+B996468,benign,30,0,0.0,0.0
+B996478,benign,30,0,0.0,0.0
+B996480,benign,29,0,0.0,0.0
+C14,carpet,14,0,0.0,0.0
+C3,carpet,11,0,0.0,0.0
+F1,focused,14,0,0.0,0.0

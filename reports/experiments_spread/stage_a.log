@@ -1,0 +1,55 @@
+=== run_baselines.py
+all_negative|weak_in_train=True                         recall=0.000 precision=0.000 fpr=0.000 pr_auc=0.205 (0s)
+threshold_dst_entropy_norm|weak_in_train=True           recall=0.984 precision=1.000 fpr=0.000 pr_auc=1.000 (0s)
+threshold_n_unique_dst|weak_in_train=True               recall=0.992 precision=1.000 fpr=0.000 pr_auc=0.995 (0s)
+rf_agg|weak_in_train=True                               recall=0.992 precision=1.000 fpr=0.000 pr_auc=0.994 (3s)
+xgb_agg|weak_in_train=True                              recall=0.992 precision=0.993 fpr=0.002 pr_auc=0.994 (4s)
+rf_agg_flow|weak_in_train=True                          recall=0.992 precision=0.992 fpr=0.002 pr_auc=0.997 (6s)
+xgb_agg_flow|weak_in_train=True                         recall=0.992 precision=1.000 fpr=0.000 pr_auc=0.994 (7s)
+
+shuffle alarm (roc_auc should be near 0.5, pr_auc near the positive rate):
+   experiment  roc_auc_mean  pr_auc_mean  positive_rate
+      rf_agg         0.518        0.261          0.205
+ rf_agg_flow         0.550        0.250          0.205
+xgb_agg_flow         0.518        0.246          0.205
+done in 14s -> C:\kodingan\skripsyit_part2\reports\experiments_spread\phase7_baselines
+=== run_ablation.py
+agg                rf  weak1 recall=0.992 precision=1.000 fpr=0.000 pr_auc=0.994 (1s)
+agg                xgb weak1 recall=0.992 precision=0.993 fpr=0.002 pr_auc=0.994 (2s)
+flow               rf  weak1 recall=0.992 precision=0.913 fpr=0.031 pr_auc=0.992 (4s)
+flow               xgb weak1 recall=0.985 precision=0.906 fpr=0.033 pr_auc=0.992 (5s)
+agg_flow           rf  weak1 recall=0.992 precision=0.992 fpr=0.002 pr_auc=0.997 (6s)
+agg_flow           xgb weak1 recall=0.992 precision=1.000 fpr=0.000 pr_auc=0.994 (7s)
+agg_flow_no_src    rf  weak1 recall=0.992 precision=1.000 fpr=0.000 pr_auc=0.994 (8s)
+agg_flow_no_src    xgb weak1 recall=0.992 precision=1.000 fpr=0.000 pr_auc=0.994 (8s)
+agg_flow_no_udp    rf  weak1 recall=0.992 precision=1.000 fpr=0.000 pr_auc=0.994 (9s)
+agg_flow_no_udp    xgb weak1 recall=0.992 precision=1.000 fpr=0.000 pr_auc=0.994 (10s)
+agg_flow_no_volume rf  weak1 recall=0.992 precision=1.000 fpr=0.000 pr_auc=0.994 (11s)
+agg_flow_no_volume xgb weak1 recall=0.992 precision=1.000 fpr=0.000 pr_auc=0.994 (11s)
+agg_flow_dst_only  rf  weak1 recall=0.992 precision=1.000 fpr=0.000 pr_auc=0.997 (12s)
+agg_flow_dst_only  xgb weak1 recall=0.992 precision=1.000 fpr=0.000 pr_auc=0.994 (12s)
+agg_flow_no_dst_count rf  weak1 recall=0.992 precision=0.992 fpr=0.002 pr_auc=0.994 (14s)
+agg_flow_no_dst_count xgb weak1 recall=0.992 precision=1.000 fpr=0.000 pr_auc=0.994 (14s)
+agg_flow_no_dst_count_no_volume rf  weak1 recall=0.992 precision=1.000 fpr=0.000 pr_auc=0.997 (15s)
+agg_flow_no_dst_count_no_volume xgb weak1 recall=0.992 precision=1.000 fpr=0.000 pr_auc=0.994 (15s)
+agg_flow_no_entropy rf  weak1 recall=0.992 precision=0.921 fpr=0.029 pr_auc=0.997 (16s)
+agg_flow_no_entropy xgb weak1 recall=0.992 precision=0.992 fpr=0.002 pr_auc=0.994 (17s)
+agg_flow_no_dst_spread rf  weak1 recall=0.992 precision=0.921 fpr=0.029 pr_auc=0.997 (18s)
+agg_flow_no_dst_spread xgb weak1 recall=0.985 precision=0.906 fpr=0.033 pr_auc=0.992 (18s)
+agg_flow_artifact  rf  weak1 recall=0.992 precision=0.992 fpr=0.002 pr_auc=0.994 (19s)
+agg_flow_artifact  xgb weak1 recall=0.992 precision=1.000 fpr=0.000 pr_auc=0.994 (19s)
+done in 19s -> C:\kodingan\skripsyit_part2\reports\experiments_spread\phase9_ablation\summary.csv and C:\kodingan\skripsyit_part2\reports\tables_spread\ablation.csv
+=== run_robustness.py
+importance fold 0 done
+importance fold 1 done
+importance fold 2 done
+importance fold 3 done
+importance fold 4 done
+Traceback (most recent call last):
+  File "C:\kodingan\skripsyit_part2\scripts\run_robustness.py", line 142, in <module>
+    main()
+  File "C:\kodingan\skripsyit_part2\scripts\run_robustness.py", line 112, in main
+    imp.to_csv(OUT / "importance.csv")
+    ^^^^^^^^^^
+AttributeError: 'tuple' object has no attribute 'to_csv'
+FAILED run_robustness.py

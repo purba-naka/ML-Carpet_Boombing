@@ -1,0 +1,15 @@
+model,weak_in_train,cut,cut_value,n,recall
+rf,True,scenario,carpet-low,54,0.9814814814814815
+rf,True,scenario,carpet-mid,51,1.0
+rf,True,scenario,carpet-stealth,28,1.0
+rf,True,n_src,1,65,0.9846153846153847
+rf,True,n_src,multi,68,1.0
+rf,True,status,ok,132,1.0
+rf,True,status,ok_weak,1,0.0
+xgb,True,scenario,carpet-low,54,0.9814814814814815
+xgb,True,scenario,carpet-mid,51,1.0
+xgb,True,scenario,carpet-stealth,28,1.0
+xgb,True,n_src,1,65,0.9846153846153847
+xgb,True,n_src,multi,68,1.0
+xgb,True,status,ok,132,1.0
+xgb,True,status,ok_weak,1,0.0
