@@ -1,0 +1,77 @@
+column,inf_cells,negative_cells,nan_cells_before,min,max,constant
+Flow Duration,0,8,0,-1082.0,119999977.0,False
+Total Fwd Packet,0,0,0,1.0,111817.0,False
+Total Bwd packets,0,0,0,0.0,111816.0,False
+Total Length of Fwd Packet,0,0,0,0.0,43788800.0,False
+Total Length of Bwd Packet,0,0,0,0.0,43788800.0,False
+Fwd Packet Length Max,0,0,0,0.0,512.0,False
+Fwd Packet Length Min,0,0,0,0.0,512.0,False
+Fwd Packet Length Mean,0,0,0,0.0,512.0,False
+Fwd Packet Length Std,0,0,0,0.0,123.03657992645927,False
+Bwd Packet Length Max,0,0,0,0.0,512.0,False
+Bwd Packet Length Min,0,0,0,0.0,512.0,False
+Bwd Packet Length Mean,0,0,0,0.0,512.0,False
+Bwd Packet Length Std,0,0,0,0.0,91.9039353528092,False
+Flow Bytes/s,75,5,30,-25599999.999999996,inf,False
+Flow Packets/s,105,8,0,-399999.99999999994,inf,False
+Flow IAT Mean,0,8,0,-1082.0,39800114.33333333,False
+Flow IAT Std,0,0,0,0.0,68934321.94844039,False
+Flow IAT Max,0,8,0,-1082.0,119398613.0,False
+Flow IAT Min,0,3960,0,-39009.0,5005557.0,False
+Fwd IAT Total,0,0,0,0.0,119999977.0,False
+Fwd IAT Mean,0,0,0,0.0,119399505.0,False
+Fwd IAT Std,0,0,0,0.0,81611861.22860205,False
+Fwd IAT Max,0,0,0,0.0,119399505.0,False
+Fwd IAT Min,0,1,0,-1063.0,119399505.0,False
+Bwd IAT Total,0,0,0,0.0,119999841.0,False
+Bwd IAT Mean,0,0,0,0.0,119399451.0,False
+Bwd IAT Std,0,0,0,0.0,81611725.46410008,False
+Bwd IAT Max,0,0,0,0.0,119399451.0,False
+Bwd IAT Min,0,0,0,0.0,119399451.0,False
+Fwd PSH Flags,0,0,0,0.0,1.0,False
+Bwd PSH Flags,0,0,0,0.0,0.0,True
+Fwd URG Flags,0,0,0,0.0,0.0,True
+Bwd URG Flags,0,0,0,0.0,0.0,True
+Fwd Header Length,0,0,0,0.0,894536.0,False
+Bwd Header Length,0,0,0,0.0,894528.0,False
+Fwd Packets/s,0,0,0,0.0,1000000.0,False
+Bwd Packets/s,0,0,0,0.0,1000000.0,False
+Packet Length Min,0,0,0,0.0,512.0,False
+Packet Length Max,0,0,0,0.0,512.0,False
+Packet Length Mean,0,0,0,0.0,512.0,False
+Packet Length Std,0,0,0,0.0,100.57832768544127,False
+Packet Length Variance,0,0,0,0.0,10116.0,False
+FIN Flag Count,0,0,0,0.0,2.0,False
+SYN Flag Count,0,0,0,0.0,2.0,False
+RST Flag Count,0,0,0,0.0,1.0,False
+PSH Flag Count,0,0,0,0.0,3.0,False
+ACK Flag Count,0,0,0,0.0,8.0,False
+URG Flag Count,0,0,0,0.0,0.0,True
+CWR Flag Count,0,0,0,0.0,0.0,True
+ECE Flag Count,0,0,0,0.0,0.0,True
+Down/Up Ratio,0,0,0,0.0,7.0,False
+Average Packet Size,0,0,0,0.0,768.0,False
+Fwd Segment Size Avg,0,0,0,0.0,512.0,False
+Bwd Segment Size Avg,0,0,0,0.0,512.0,False
+Fwd Bytes/Bulk Avg,0,0,0,0.0,0.0,True
+Fwd Packet/Bulk Avg,0,0,0,0.0,0.0,True
+Fwd Bulk Rate Avg,0,0,0,0.0,0.0,True
+Bwd Bytes/Bulk Avg,0,0,0,0.0,87577600.0,False
+Bwd Packet/Bulk Avg,0,0,0,0.0,223039.0,False
+Bwd Bulk Rate Avg,0,0,0,0.0,949009.0,False
+Subflow Fwd Packets,0,0,0,0.0,594.0,False
+Subflow Fwd Bytes,0,0,0,0.0,1223.0,False
+Subflow Bwd Packets,0,0,0,0.0,8.0,False
+Subflow Bwd Bytes,0,0,0,0.0,1024.0,False
+FWD Init Win Bytes,0,0,0,0.0,29200.0,False
+Bwd Init Win Bytes,0,0,0,0.0,28960.0,False
+Fwd Act Data Pkts,0,0,0,0.0,111519.0,False
+Fwd Seg Size Min,0,0,0,0.0,40.0,False
+Active Mean,0,0,0,0.0,101640729.0,False
+Active Std,0,0,0,0.0,75296899.16232546,False
+Active Max,0,0,0,0.0,106486513.0,False
+Active Min,0,0,0,0.0,101640729.0,False
+Idle Mean,0,0,0,0.0,119398613.0,False
+Idle Std,0,0,0,0.0,59433075.199024156,False
+Idle Max,0,0,0,0.0,119398613.0,False
+Idle Min,0,0,0,0.0,119398613.0,False

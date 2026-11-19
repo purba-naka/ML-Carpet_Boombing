@@ -54,7 +54,7 @@ Nilai: `todo`, `doing`, `done`, `blocked`. Perbarui setelah tiap tugas.
 | DS-5 Tangkap sesi A | MANUSIA | todo | |
 | DS-6 Tangkap sesi B | MANUSIA | todo | |
 | DS-7 PCAP ke flow | MANUSIA | todo | |
-| DS-8 Validasi tangkapan | MODEL | todo | |
+| DS-8 Validasi tangkapan | MODEL | done | `scripts/validate_capture.py --capture X`. Di TA menemukan jeda 61 s, host .21/.22, TEST4 hilang, kiriman 08:57 |
 | DS-9 MAWI/MAWILab | MANUSIA + MODEL | todo | |
 | DS-10 CIC-DDoS2019 (jika K6 = ya) | MODEL | todo | |
 
@@ -259,3 +259,34 @@ Batas yang harus ditulis jujur di skripsi: sebaran tujuan pada data ini adalah h
 - [ ] MAWI punya CSV flow, tabel label per (subnet, jendela), dan `SOURCE.md`.
 - [ ] K6 diputuskan; jika ya, DS-10 lulus penerimaan.
 - [ ] `CAPTURE_NOTES.md` tiap sesi lengkap, dan Bab 3.2.6 naskah diperbarui mengikuti testbed yang nyata.
+
+## 7. Catatan dan pengingat dari data tes (15 sampai 19 Nov 2026)
+
+Dari tes empat run `dataset2/` (tangkapan TA) dan retest TCP SYN `dataset_retest/`. Angka berasal dari `scripts/validate_capture.py` dan pemeriksaan pcap.
+
+### 7.1 Untuk teman yang menangkap (cek sebelum dan sesudah tiap sesi)
+
+| Masalah di data tes | Akibat | Yang harus dilakukan |
+|---|---|---|
+| Sumber palsu acak per paket (`--rand-source`) | Tiap paket jadi flow 1 paket, CICFlowMeter membuangnya. TEST4 TCP SYN tersisa 1 flow | Multi sumber memakai kumpulan 100 IP tetap (`100.64.0.0/10`). Sudah terbukti di retest: 2.016 SYN, 224 flow, semua masuk CSV |
+| Kiriman penyerang di luar skrip (TA 08:57 sampai 08:58) | 28 flow berisi 45.000 paket, hampir terlabel benign | Semua kiriman lewat runner dan tercatat di log, termasuk uji coba |
+| File pcap tumpang tindih saat capture di-restart (15:51:32 dan 15:52:35 WIB) | 71 flow benign tercatat dua kali | Jangan ada dua file pcap yang menutupi menit yang sama. Pipeline membuang duplikat (D10), tapi penyebabnya harus dihindari |
+| Host `.21` dan `.22` di subnet 1 tidak ada | TEST1 hanya mengenai 14 dari 16 target, TEST2 30 dari 32 | Target hanya host aktif. Subnet 1 butuh minimal 128 host aktif untuk A-C08 dan B-C08 |
+| Jeda antar run 61 detik, mulai di detik :49 sampai :53 | Flow run sebelumnya masih jalan saat run berikutnya mulai | Runner: mulai tepat detik :00, jeda 4 menit |
+| Retest tidak tercatat di `attack_log.csv` | Run tanpa log tidak bisa dilabeli | Setiap kiriman satu baris log (`RETEST1`, dst.) |
+
+### 7.2 Untuk pipeline
+
+- Validator: `PYTHONPATH=src .venv/Scripts/python.exe scripts/validate_capture.py --capture A`. Jalankan begitu data datang, sebelum `run_ingest`. Untuk sesi B hanya validator ini yang boleh membaca datanya sebelum model dikunci.
+- Tangkapan baru didaftarkan di `config.CAPTURES` dan `config.CAPTURE_FILES`, lalu dipilih dengan `CARPET_CAPTURES=S1,A,B`. Isi `benign_sources` dari daftar IP klien normal di `CAPTURE_NOTES.md`, kalau ada klien di luar subnet korban. Tanpa itu, klien tersebut terhitung penyerang.
+- Aturan serangan tak tercatat (D28): lebih dari 50 flow **atau** lebih dari 300 paket penyerang per jendela di luar run.
+- Sebagian flow serangan tercatat dengan port terbalik (misalnya `53 -> 2465`, satu arah), karena host korban memantulkan UDP. Ini artefak CICFlowMeter. Validator menghitungnya sebagai flow yang sesuai.
+- Flow `8.6.0.1 -> 8.0.6.4` protokol 0 muncul di CSV TA dan retest, kemungkinan paket ARP yang salah dibaca CICFlowMeter. Tujuannya di luar subnet korban, jadi terbuang saat clean. Di S1, `8.6.0.1` tercatat sebagai sumber benign (`benign_sources`); hubungannya dengan ARP belum dibuktikan.
+- Artefak split dan fitur S1 berstatus usang sejak PL-8 (konstanta lama dihapus). Dibuat ulang di PL-11, atau jalankan `run_split` dan `run_features` kalau dibutuhkan sebelumnya.
+- Cadangan artefak S1 sebelum PL-8 ada di `data/backup_s1_before_pl8/` (750 MB). Boleh dihapus setelah PL-11 selesai.
+
+### 7.3 Untuk naskah skripsi (keterbatasan)
+
+- CICFlowMeter membuang flow 1 paket. Serangan yang tiap paketnya berbeda 5-tuple tidak terlihat oleh deteksi berbasis flow.
+- Host korban (VPCS) di subnet 1 memantulkan setiap paket UDP, jadi fitur arah balik (Bwd) adalah artefak testbed. Ini memperkuat D15. Host di subnet 2 (ARP responder) tidak membalas sama sekali.
+- FortiGate dengan lisensi tanpa biaya meloloskan satu SYN per 5-tuple tiap 10 detik (retest: 112 paket per 10 detik, sekitar 11 pps dari 500 pps yang dikirim). Variasi laju tidak berlaku untuk vektor TCP SYN. Batas aman laju UDP testbed sekitar 2000 pps.

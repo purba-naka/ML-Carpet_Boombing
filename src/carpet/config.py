@@ -1,4 +1,28 @@
-"""Single source of truth: paths, constants, enums. Nothing else in the repo retypes these values."""
+"""Single source of truth: paths, constants, enums. Nothing else in the repo retypes these values.
+
+Captures (PL-8). `CAPTURES` registers every capture with plain values only, `CAPTURE_FILES` says where
+its CSVs and attack log live, and `CARPET_CAPTURES` (comma list, default `S1`) picks the ones in use.
+`spoof_filter` keeps the S1 rule, where a spoofed source only counted on DNS over UDP. New captures
+have none: any source outside the victim subnets and outside `benign_sources` is the attacker.
+`rows_expected` guards the ingest where the row count is known; None means count the CSV lines.
+`TA` is the four run test capture of 2026-11-15 (`dataset2/`), there to exercise the code on the
+new log format and vectors, never to train or judge a model. S1 alone keeps the v1 folders, so
+every S1 result stays where it was; any other capture set gets its own folders.
+
+Attack log (scheme v2 section 5). `LOG_DOMAINS` lists the allowed value per column, "-" means not
+applicable. S1 has one test run called TEST, the new captures TEST1.. and RETEST1.., hence
+`TEST_RUN_PREFIXES`.
+
+Capture validator (DS-8, `scripts/validate_capture.py`). The first attacker flow of a run must
+show up within `VALIDATE_START_SLACK_SECONDS` of `start_ts`, and runs must sit at least
+`VALIDATE_MIN_RUN_GAP_SECONDS` apart (flow timeout 120 s plus the 60 s boundary buffer).
+
+Unlogged attacks (D28). A window outside every run seeds an unlogged zone when it holds more than
+`UNLOGGED_MIN_FLOWS` attacker flows or more than `UNLOGGED_MIN_PKTS` attacker packets. The packet
+rule catches an unlogged send with a fixed source port: in the TA test capture 28 flows carried
+45,000 packets in one minute and slipped past the flow rule. 300 is about ten times the most
+attacker packets in any usable S1 benign window (31).
+"""
 import json
 import os
 from enum import StrEnum
@@ -15,13 +39,39 @@ WINDOW_ASSIGNMENT = os.environ.get("CARPET_WINDOW_ASSIGNMENT", "spread")
 if WINDOW_ASSIGNMENT not in ("start", "spread"):
     raise ValueError(f"CARPET_WINDOW_ASSIGNMENT must be start or spread, got {WINDOW_ASSIGNMENT!r}")
 _variant = "" if WINDOW_ASSIGNMENT == "start" else "_spread"
-RAW_FLOW_CSVS = {s: ROOT / f"dataset/csv/sesi{s}_all.csv/sesi{s}_all.csv" for s in (1, 2, 3)}
-ATTACK_LOG = ROOT / "dataset/Attack_log-20261109T113913Z-1-001/Attack_log/attack_log.csv"
-INTERIM = ROOT / "data/interim"
-PROCESSED = ROOT / f"data/processed{_variant}"
+
+_NEW_SUBNETS = ["198.51.100.", "203.0.113."]
+CAPTURES = {
+    "S1": {"victim_prefixes": ["198.51.100."], "attacker_ips": ["192.168.1.65"],
+           "benign_sources": ["8.6.0.1"], "spoof_filter": {"proto": 17, "dst_port": 53},
+           "flow_timeout_s": 120, "rows_expected": {"1": 3_833_012, "2": 2_444_150, "3": 3_490_688}},
+    "TA": {"victim_prefixes": _NEW_SUBNETS, "attacker_ips": ["192.168.1.65"], "benign_sources": [],
+           "spoof_filter": None, "flow_timeout_s": 120, "rows_expected": None},
+    "A": {"victim_prefixes": _NEW_SUBNETS, "attacker_ips": ["192.168.1.65"], "benign_sources": [],
+          "spoof_filter": None, "flow_timeout_s": 120, "rows_expected": None},
+    "B": {"victim_prefixes": _NEW_SUBNETS, "attacker_ips": ["192.168.1.65"], "benign_sources": [],
+          "spoof_filter": None, "flow_timeout_s": 120, "rows_expected": None},
+}
+CAPTURE_FILES = {
+    "S1": {"csvs": {str(s): ROOT / f"dataset/csv/sesi{s}_all.csv/sesi{s}_all.csv" for s in (1, 2, 3)},
+           "attack_log": ROOT / "dataset/Attack_log-20261109T113913Z-1-001/Attack_log/attack_log.csv"},
+    "TA": {"csvs": {"1": ROOT / "dataset2/sesiA_test_all.csv/sesiA_test_all.csv"},
+           "attack_log": ROOT / "dataset2/attack_log.csv"},
+    "A": {"csvs": {"1": ROOT / "dataset/sesiA/csv/sesiA_all.csv"}, "attack_log": ROOT / "dataset/sesiA/attack_log.csv"},
+    "B": {"csvs": {"1": ROOT / "dataset/sesiB/csv/sesiB_all.csv"}, "attack_log": ROOT / "dataset/sesiB/attack_log.csv"},
+}
+ACTIVE_CAPTURES = tuple(os.environ.get("CARPET_CAPTURES", "S1").split(","))
+_unknown_captures = set(ACTIVE_CAPTURES) - set(CAPTURES)
+if _unknown_captures:
+    raise ValueError(f"CARPET_CAPTURES names unknown captures: {sorted(_unknown_captures)}")
+CAPTURE_SETTINGS = {c: CAPTURES[c] for c in ACTIVE_CAPTURES}
+
+_captures = "" if ACTIVE_CAPTURES == ("S1",) else "_" + "+".join(ACTIVE_CAPTURES)
+INTERIM = ROOT / f"data/interim{_captures}"
+PROCESSED = ROOT / f"data/processed{_variant}{_captures}"
 REPORTS = ROOT / "reports"
-EXPERIMENTS = REPORTS / f"experiments{_variant}"
-FIGURES = REPORTS / f"figures{_variant}"
+EXPERIMENTS = REPORTS / f"experiments{_variant}{_captures}"
+FIGURES = REPORTS / f"figures{_variant}{_captures}"
 MODELS = ROOT / "models"
 
 FLOWS = INTERIM / "flows.parquet"
@@ -31,8 +81,7 @@ SPLIT = PROCESSED / "split.parquet"
 FEATURES_AGG = PROCESSED / "features_agg.parquet"
 FEATURES_FLOW = PROCESSED / "features_flow.parquet"
 FEATURES_ARTIFACT = PROCESSED / "features_artifact.parquet"
-TABLES = REPORTS / f"tables{_variant}"
-RAW_ROWS_EXPECTED = {1: 3_833_012, 2: 2_444_150, 3: 3_490_688}
+TABLES = REPORTS / f"tables{_variant}{_captures}"
 
 # Zero in every raw row (verified by run_clean). Kept in the flow table, never offered as features.
 CONSTANT_COLUMNS = ("Bwd PSH Flags", "Fwd URG Flags", "Bwd URG Flags", "URG Flag Count",
@@ -41,14 +90,24 @@ CONSTANT_COLUMNS = ("Bwd PSH Flags", "Fwd URG Flags", "Bwd URG Flags", "URG Flag
 
 SEED = 42
 WINDOW_SECONDS = 60
-VICTIM_PREFIX = "198.51.100."
-ATTACKER_IP = "192.168.1.65"
-BENIGN_SRC_EXTRA = "8.6.0.1"
-DNS_PORT = 53
 UDP = 17
 
-TEST_RUN = "TEST"
+TEST_RUN_PREFIXES = ("TEST", "RETEST")
+VALIDATE_START_SLACK_SECONDS = 5
+VALIDATE_MIN_RUN_GAP_SECONDS = 180
+
+LOG_DOMAINS = {
+    "scenario": ("carpet", "carpet-low", "carpet-mid", "carpet-stealth", "focused",
+                 "benign-wide", "benign-flash", "benign-sweep", "test"),
+    "rate_unit": ("pps", "us_interval"),
+    "n_src": ("1", "multi", "-"),
+    "proto": ("udp", "tcp", "-"),
+    "spread": ("uniform", "skewed", "-"),
+    "sport_mode": ("fixed", "random", "-"),
+    "background": ("normal", "wide", "flash", "-"),
+}
 UNLOGGED_MIN_FLOWS = 50
+UNLOGGED_MIN_PKTS = 300
 UNLOGGED_GAP_SECONDS = 300
 BOUNDARY_BUFFER_SECONDS = 60
 BENIGN_BLOCK_SECONDS = 1800
@@ -85,7 +144,9 @@ WEAK_IN_TRAIN_SETTINGS = (True, False) if WINDOW_ASSIGNMENT == "start" else (Tru
 FORBIDDEN_FEATURES = frozenset({
     "attacker_flows", "run_id", "group", "subclass", "status", "label", "near_attack",
     "w", "window_start", "subnet",
-    "Flow ID", "Src IP", "Dst IP", "Src Port", "Dst Port", "Timestamp", "ts", "session",
+    "Flow ID", "Src IP", "Dst IP", "Src Port", "Dst Port", "Timestamp", "ts", "session", "capture",
+    "run_scenario", "run_dst", "run_spread", "run_proto", "run_dst_port", "run_sport_mode", "run_background",
+    "run_n_src",
 })
 
 
@@ -162,6 +223,7 @@ class Status(StrEnum):
 
 class Subclass(StrEnum):
     BENIGN = "benign"
+    BENIGN_HARD = "benign_hard"
     CARPET = "carpet"
     FOCUSED = "focused"
     UNLOGGED = "unlogged"
@@ -174,15 +236,21 @@ if _leaked:
     raise ValueError(f"FEATURE_SETS contain forbidden columns: {sorted(_leaked)}")
 
 
+_NOT_IN_SNAPSHOT = frozenset({"CAPTURE_FILES", "CAPTURES"})
+
+
 def snapshot() -> dict:
     """Every UPPER_CASE constant except paths, as plain JSON values.
+
+    `CAPTURE_FILES` holds paths. `CAPTURES` is the whole registry, and registering a new capture must
+    not make the artifacts of other captures stale; the captures in use are recorded via CAPTURE_SETTINGS.
 
     Auto-collected on purpose: a hand-kept list would drift the first time
     someone adds a constant and forgets the list.
     """
     out = {}
     for name, v in globals().items():
-        if not name.isupper() or isinstance(v, Path) or name == "RAW_FLOW_CSVS":
+        if not name.isupper() or isinstance(v, Path) or name in _NOT_IN_SNAPSHOT:
             continue
         out[name] = sorted(v) if isinstance(v, frozenset) else v
     # Round-trip through JSON so the live values compare equal to what a meta file

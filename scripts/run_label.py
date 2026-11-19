@@ -5,8 +5,8 @@ import pandas as pd
 
 from carpet import config, io, labeling, windows
 
-CONFIG_KEYS = ["WINDOW_SECONDS", "WINDOW_ASSIGNMENT", "VICTIM_PREFIX", "ATTACKER_IP", "BENIGN_SRC_EXTRA", "DNS_PORT", "UDP",
-               "TEST_RUN", "UNLOGGED_MIN_FLOWS", "UNLOGGED_GAP_SECONDS", "BOUNDARY_BUFFER_SECONDS",
+CONFIG_KEYS = ["WINDOW_SECONDS", "WINDOW_ASSIGNMENT", "CAPTURE_SETTINGS", "LOG_DOMAINS",
+               "TEST_RUN_PREFIXES", "UNLOGGED_MIN_FLOWS", "UNLOGGED_MIN_PKTS", "UNLOGGED_GAP_SECONDS", "BOUNDARY_BUFFER_SECONDS",
                "BENIGN_BLOCK_SECONDS", "NEAR_ATTACK_SECONDS", "MIN_USABLE_WINDOWS_PER_RUN"]
 
 
@@ -30,6 +30,8 @@ def main() -> None:
         "weak_by_subclass": usable[usable.status == config.Status.OK_WEAK].subclass.value_counts().to_dict(),
         "benign_near_attack": int(usable[usable.subclass == config.Subclass.BENIGN].near_attack.sum()),
         "usable_by_label": {str(k): int(v) for k, v in usable.label.value_counts().items()},
+        "usable_by_capture_subclass": {f"{c}/{s}": int(v) for (c, s), v in
+                                       usable.groupby(["capture", "subclass"]).size().items()},
     }
     io.write_artifact(labeled, config.WINDOWS_LABELED, script="scripts/run_label.py",
                       config_keys=CONFIG_KEYS, inputs=(config.FLOWS_CLEAN,),
@@ -40,6 +42,8 @@ def main() -> None:
     pd.crosstab(labeled.subclass, labeled.status).to_csv(config.TABLES / "label_subclass_status.csv")
     per_run = pd.crosstab(usable[usable.run_id != labeling.NO_RUN].run_id, usable.status)
     per_run.to_csv(config.TABLES / "label_per_run.csv")
+    per_capture = labeled.groupby(["capture", "subclass", "status"]).size().rename("windows")
+    per_capture.to_csv(config.TABLES / "label_per_capture.csv")
     # Under `start` every flow is one row. Under `spread` a flow is one row per window it touches.
     if labeled.n_flows.sum() != pieces:
         raise ValueError("flows were lost between clean flows and windows")

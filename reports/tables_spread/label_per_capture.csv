@@ -1,0 +1,7 @@
+capture,subclass,status,windows
+S1,benign,exclude_boundary,60
+S1,benign,ok,533
+S1,carpet,ok,185
+S1,carpet,ok_weak,1
+S1,focused,ok,112
+S1,unlogged,exclude_unlogged,30

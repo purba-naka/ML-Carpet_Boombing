@@ -37,10 +37,10 @@ Setelah disetujui, salin ke tabel keputusan dan log perubahan `IMPLEMENTATION.md
 | P2 | Aturan pilih hasil tuning? | Ambil rata-rata PR-AUC terbaik. Seri hanya jika selisih di bawah satu galat baku (`std / sqrt(5)`), lalu pilih yang paling sederhana. Kalau yang terpilih masih di bawah default, pakai default. | PL-3 | [ ] |
 | P3 | Jumlah kombinasi tuning? | 30 per model (kembali ke rencana awal, karena data baru lebih sulit). | PL-3 | [ ] |
 | P4 | `max_features = 1.0` boleh untuk RF? | Tidak. Nilai yang boleh: `sqrt`, `log2`, 0.3, 0.5. | PL-3 | [ ] |
-| P5 | Ambang keputusan? | Tetap 0,5 sebagai angka utama. Tambahan: satu titik operasi "FPR paling banyak 1 persen" yang ambangnya dipilih dari prediksi CV, dinyatakan sebelum final. | PL-11, PL-12 | [ ] |
+| P5 | Ambang keputusan? | Tetap 0,5 sebagai angka utama. Tambahan: satu titik operasi "FPR paling banyak 1 persen" yang ambangnya dipilih dari prediksi CV, dinyatakan sebelum final. | PL-11, PL-12 | [x] |
 | P6 | Jendela weak di data latih (D3) setelah P1? | Tetap dijalankan dua kali. Kalau setelah `spread` jumlah weak di bawah 2 persen jendela carpet, laporkan itu dan pakai satu pengaturan saja (weak ikut dilatih). | PL-2, PL-11 | [ ] |
-| P7 | Subclass baru untuk benign sulit? | Ya, `benign_hard`, label 0, ikut dalam stratifikasi fold. | PL-9, PL-10 | [ ] |
-| P8 | Susunan hold-out v2? | Seluruh sesi B. Semua data S1 (termasuk hold-out v1) dan sesi A menjadi trainval. | PL-10 | [ ] |
+| P7 | Subclass baru untuk benign sulit? | Ya, `benign_hard`, label 0, ikut dalam stratifikasi fold. | PL-9, PL-10 | [x] |
+| P8 | Susunan hold-out v2? | Seluruh sesi B. Semua data S1 (termasuk hold-out v1) dan sesi A menjadi trainval. | PL-10 | [x] |
 | P9 | Saringan jendela MAWI? | Hanya (subnet, jendela) dengan minimal 20 flow. Angka ini ditetapkan sebelum melihat prediksi. | PL-13 | [ ] |
 | P10 | Ablation multi-window 5 dan 30 detik? | Opsional, dikerjakan terakhir jika ada waktu. | PL-15 | [ ] |
 
@@ -64,8 +64,8 @@ Nilai: `todo`, `doing`, `done`, `blocked`.
 
 | Tugas | Prasyarat | Status | Catatan |
 |---|---|---|---|
-| PL-8 Dukungan banyak tangkapan | DS-1 | todo | |
-| PL-9 Pelabelan untuk vektor dan skenario baru | PL-8, P7 | todo | |
+| PL-8 Dukungan banyak tangkapan | DS-1 | done | `config.CAPTURES`, `CARPET_CAPTURES`. S1 saja: 9.767.850 masuk, 9.758.984 bersih, sama. S1+TA: 10.093.522 masuk, 71 duplikat TA dibuang (D10, file pcap tumpang tindih), 10.084.472 bersih |
+| PL-9 Pelabelan untuk vektor dan skenario baru | PL-8, P7 | done | S1: 921 jendela identik baris demi baris. S1+TA: 996 jendela, TA 58 benign + 17 exclude_test. Celah: kiriman tak tercatat bersedikit flow lolos aturan flow (TA 08:57), menunggu keputusan |
 | PL-10 Split v2 | PL-9, P8 | todo | |
 | PL-11 Jalankan ulang fase 1 sampai 9 | PL-2..PL-7, PL-10 | todo | |
 | PL-12 Evaluasi final v2 (satu kali) | PL-11, P5 | todo | |

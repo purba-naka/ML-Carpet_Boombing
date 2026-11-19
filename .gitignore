@@ -13,3 +13,5 @@ nul
 # not for the public repo: proposal PDF and scratch files
 Final Report Pre Thesis*.pdf
 _tmp_*
+dataset2/
+dataset_retest/

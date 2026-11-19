@@ -11,8 +11,13 @@ import pyarrow.parquet as pq
 
 from carpet import config
 
-LOG_COLUMNS = ["run_id", "scenario", "subnet", "dst", "start_ts", "end_ts",
-               "interval_us", "payload", "n_src", "attacker_ip"]
+LOG_COLUMNS_S1 = ["run_id", "scenario", "subnet", "dst", "start_ts", "end_ts",
+                  "interval_us", "payload", "n_src", "attacker_ip"]
+LOG_COLUMNS = ["run_id", "scenario", "subnet", "dst", "start_ts", "end_ts", "rate", "rate_unit",
+               "payload", "n_src", "attacker_ip", "proto", "dst_port", "spread", "sport_mode",
+               "background", "capture"]
+LOG_INT_COLUMNS = ["start_ts", "end_ts"]
+LOG_NUMBER_COLUMNS = ["dst", "rate", "payload", "dst_port"]
 
 
 ID_COLUMNS = ["Flow ID", "Src IP", "Dst IP", "Timestamp"]
@@ -20,22 +25,37 @@ INT_COLUMNS = ["Src Port", "Dst Port", "Protocol"]
 DROP_COLUMNS = ["Label"]
 
 
+def raw_csvs() -> list[tuple[str, int, Path]]:
+    """(capture, session, path) of every raw flow CSV of the active captures."""
+    return [(c, int(s), p) for c in config.ACTIVE_CAPTURES for s, p in config.CAPTURE_FILES[c]["csvs"].items()]
+
+
 def iter_raw_flows(usecols: list[str], dtype: dict | None = None,
-                   chunksize: int = 500_000) -> Iterator[tuple[int, pd.DataFrame]]:
-    """Yield (session, chunk). Chunked because the 3 CSVs are 0.9 to 1.5 GB each."""
-    for session, path in config.RAW_FLOW_CSVS.items():
+                   chunksize: int = 500_000) -> Iterator[tuple[str, int, pd.DataFrame]]:
+    """Yield (capture, session, chunk). Chunked because one CSV can be 0.9 to 1.5 GB."""
+    for capture, session, path in raw_csvs():
         for chunk in pd.read_csv(path, usecols=usecols, dtype=dtype, chunksize=chunksize):
-            yield session, chunk
+            yield capture, session, chunk
 
 
 def raw_header() -> list[str]:
-    """Header shared by all raw CSVs. Refuses to go on if the sessions disagree."""
-    headers = {s: pd.read_csv(p, nrows=0).columns.tolist() for s, p in config.RAW_FLOW_CSVS.items()}
+    """Header shared by all raw CSVs. Refuses to go on if any two files disagree."""
+    headers = {(c, s): pd.read_csv(p, nrows=0).columns.tolist() for c, s, p in raw_csvs()}
     first = next(iter(headers.values()))
-    bad = [s for s, h in headers.items() if h != first]
+    bad = [k for k, h in headers.items() if h != first]
     if bad:
-        raise ValueError(f"raw CSV header differs in sessions {bad}")
+        raise ValueError(f"raw CSV header differs in (capture, session) {bad}")
     return first
+
+
+def count_csv_rows(path: Path) -> int:
+    """Data rows of a CSV (lines minus the header), counted on the raw bytes."""
+    lines, last = 0, b"\n"
+    with open(path, "rb") as f:
+        while block := f.read(1 << 24):
+            lines += block.count(b"\n")
+            last = block[-1:]
+    return lines + (last != b"\n") - 1
 
 
 def raw_dtypes(header: list[str]) -> dict:
@@ -52,26 +72,79 @@ def raw_dtypes(header: list[str]) -> dict:
     return dtypes
 
 
-def type_flows(chunk: pd.DataFrame, session: int) -> pd.DataFrame:
-    """Raw CSV chunk to typed flows: epoch `ts` instead of the text Timestamp, plus `session`."""
+def type_flows(chunk: pd.DataFrame, capture: str, session: int) -> pd.DataFrame:
+    """Raw CSV chunk to typed flows: epoch `ts` instead of the text Timestamp, plus `session` and `capture`."""
     t = pd.to_datetime(chunk["Timestamp"], format=config.TIMESTAMP_FORMAT, errors="coerce")
     if t.isna().any():
         bad = chunk.loc[t.isna(), "Timestamp"].head(3).tolist()
-        raise ValueError(f"session {session}: {int(t.isna().sum())} unparsable timestamps, e.g. {bad}")
+        raise ValueError(f"{capture} session {session}: {int(t.isna().sum())} unparsable timestamps, e.g. {bad}")
     out = chunk.drop(columns=["Timestamp", *DROP_COLUMNS], errors="ignore")
     out.insert(3, "ts", ((t - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")).astype("int64"))
     out.insert(4, "session", pd.Series(session, index=out.index, dtype="int8"))
+    out.insert(5, "capture", pd.Series(capture, index=out.index, dtype="string"))
     return out
 
 
+def _from_s1_log(log: pd.DataFrame) -> pd.DataFrame:
+    """S1 log (10 columns) onto the v2 columns, with the values S1 was captured with.
+
+    S1 logged the gap between packets in microseconds. It is kept as is with unit `us_interval`
+    rather than turned into a rate nobody measured. Every S1 run was spoofed or plain DNS over
+    UDP with a fixed source port and no concurrent hard benign traffic.
+    """
+    return log.drop(columns="interval_us").assign(
+        rate=log.interval_us, rate_unit="us_interval", proto="udp", dst_port="53",
+        spread=log.scenario.map(lambda s: "-" if s == "focused" else "uniform"),
+        sport_mode="fixed", background="normal")
+
+
+def read_capture_log(capture: str) -> pd.DataFrame:
+    """One capture's attack log in LOG_COLUMNS, with `capture` set from the registry id.
+
+    The registry id wins over the file's own `capture` column: the test capture TA logged its
+    runs as `A`, and a rehearsal must never be mistaken for the session it rehearsed.
+    """
+    path = config.CAPTURE_FILES[capture]["attack_log"]
+    log = pd.read_csv(path, dtype=str, keep_default_na=False)
+    if list(log.columns) == LOG_COLUMNS_S1:
+        log = _from_s1_log(log)
+    elif list(log.columns) != LOG_COLUMNS:
+        raise ValueError(f"{capture} attack_log columns {list(log.columns)} match neither "
+                         f"{LOG_COLUMNS_S1} nor {LOG_COLUMNS}")
+    log = log.assign(capture=capture)[LOG_COLUMNS]
+    for c in LOG_INT_COLUMNS:
+        log[c] = log[c].astype("int64")
+    for c in LOG_NUMBER_COLUMNS:
+        log[c] = pd.to_numeric(log[c], errors="coerce")
+    return log
+
+
+def check_attack_log(log: pd.DataFrame) -> None:
+    """Refuses a log that would make labels wrong. Every broken rule is listed at once."""
+    problems = []
+    dup = log.run_id[log.run_id.duplicated()].tolist()
+    if dup:
+        problems.append(f"duplicate run_id across logs: {dup}")
+    backwards = log.run_id[log.end_ts <= log.start_ts].tolist()
+    if backwards:
+        problems.append(f"end_ts <= start_ts in runs {backwards}")
+    for capture, runs in log.sort_values("start_ts").groupby("capture"):
+        ids = runs.run_id.to_numpy()
+        clash = runs.start_ts.to_numpy()[1:] < runs.end_ts.to_numpy()[:-1]
+        if clash.any():
+            problems.append(f"{capture}: overlapping runs {list(zip(ids[:-1][clash], ids[1:][clash]))}")
+    for col, allowed in config.LOG_DOMAINS.items():
+        bad = sorted(set(log[col]) - set(allowed))
+        if bad:
+            problems.append(f"{col} has values outside {list(allowed)}: {bad}")
+    if problems:
+        raise ValueError("attack log refused:\n  " + "\n  ".join(problems))
+
+
 def read_attack_log() -> pd.DataFrame:
-    log = pd.read_csv(config.ATTACK_LOG, dtype={"n_src": "string"})
-    if list(log.columns) != LOG_COLUMNS:
-        raise ValueError(f"attack_log columns {list(log.columns)} != expected {LOG_COLUMNS}")
-    if log.run_id.duplicated().any():
-        raise ValueError(f"duplicate run_id in attack_log: {log.run_id[log.run_id.duplicated()].tolist()}")
-    if (log.end_ts <= log.start_ts).any():
-        raise ValueError("attack_log has a run with end_ts <= start_ts")
+    """The attack logs of every active capture, checked and stacked."""
+    log = pd.concat([read_capture_log(c) for c in config.ACTIVE_CAPTURES], ignore_index=True)
+    check_attack_log(log)
     return log
 
 

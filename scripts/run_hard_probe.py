@@ -26,7 +26,7 @@ COLUMNS = list(dict.fromkeys([*features.FLOW_COLUMNS, *config.FLOW_SUMMARY_COLUM
 def run_flows(start_ts: int, end_ts: int) -> pd.DataFrame:
     parts = []
     for f in io.iter_artifact(config.FLOWS_CLEAN, COLUMNS):
-        f = f[(f.ts >= start_ts - 120) & (f.ts <= end_ts + 120) & f["Dst IP"].str.startswith(config.VICTIM_PREFIX)]
+        f = f[(f.ts >= start_ts - 120) & (f.ts <= end_ts + 120) & f["Dst IP"].str.startswith(tuple(config.CAPTURES["S1"]["victim_prefixes"]))]
         if len(f):
             parts.append(f)
     return pd.concat(parts, ignore_index=True)

@@ -1,0 +1,37 @@
+check,scope,value,expected,result
+1 header,csv 1,84 columns,"84 columns, same as S1",pass
+1 rows,csv 1,325672,325672,pass
+2 timestamps,all,0,0,pass
+3 log,all,4 runs,"unique ids, no overlap, known values",pass
+3 gap,TEST1 -> TEST2,61 s,>= 180 s,fail
+3 gap,TEST2 -> TEST3,61 s,>= 180 s,fail
+3 gap,TEST3 -> TEST4,61 s,>= 180 s,fail
+4 timing,TEST1,"first +0 s, last -54 s after end","first within 5 s, last <= 120 s",pass
+4 volume,TEST1,"83 flows, 79262 fwd packets",-,pass
+5 targets,TEST1,14,16,fail
+5 target file,TEST1,"16 listed, 0 hit outside the list",every hit host is listed,pass
+5 protocol,TEST1,83 of 83 flows are udp,all,pass
+5 dst port,TEST1,83 of 83 flows on port 53,all,pass
+5 flipped flows,TEST1,42 flows with the ports swapped,info: CICFlowMeter splits the echoed conversation,pass
+4 timing,TEST2,"first +0 s, last +0 s after end","first within 5 s, last <= 120 s",pass
+4 volume,TEST2,"309195 flows, 309195 fwd packets",-,pass
+5 targets,TEST2,30,32,fail
+5 target file,TEST2,"32 listed, 0 hit outside the list",every hit host is listed,pass
+5 protocol,TEST2,309195 of 309195 flows are udp,all,pass
+4 timing,TEST3,"first +0 s, last -61 s after end","first within 5 s, last <= 120 s",pass
+4 volume,TEST3,"8 flows, 332156 fwd packets",-,pass
+5 targets,TEST3,2,2,pass
+5 target file,TEST3,"2 listed, 0 hit outside the list",every hit host is listed,pass
+5 protocol,TEST3,8 of 8 flows are udp,all,pass
+5 dst port,TEST3,8 of 8 flows on port 123,all,pass
+5 flipped flows,TEST3,4 flows with the ports swapped,info: CICFlowMeter splits the echoed conversation,pass
+4 timing,TEST4,"first +69 s, last -111 s after end","first within 5 s, last <= 120 s",fail
+4 volume,TEST4,"1 flows, 2 fwd packets",-,pass
+5 targets,TEST4,1,16,fail
+5 target file,TEST4,"16 listed, 0 hit outside the list",every hit host is listed,pass
+5 protocol,TEST4,1 of 1 flows are tcp,all,pass
+5 dst port,TEST4,1 of 1 flows on port 80,all,pass
+6 unlogged,outside attack runs,1 windows,0 windows over the D28 rule,fail
+6 unlogged window,2026-11-15 08:57:00,"28 flows, 45000 packets",<= 50 flows and <= 300 packets,fail
+8 capture gaps,all,0 empty minutes,0,pass
+9 design,all,0 non test runs,10 or more,skip
